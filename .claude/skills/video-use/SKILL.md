@@ -59,12 +59,13 @@ The skill lives in `video-use/`. User footage lives wherever they put it. All se
 
 First-time install lives in `install.md` (clone, deps, ffmpeg, skill registration, API key). Don't re-run it every session; on cold start just verify:
 
-- `ffmpeg` + `ffprobe` on PATH.
+- `ffmpeg` + `ffprobe` on PATH. Hard requirement for every session — cutting, grading, fades, concat, and the final Remotion render-to-mp4 step all go through ffmpeg.
 - Python deps installed (`uv sync` or `pip install -e .` inside the repo) — this pulls in `faster-whisper` for free, local, offline transcription. No API key, no ElevenLabs, no per-minute cost.
 - Optional: `HF_TOKEN` in `.env` if the user wants free speaker diarization via `pyannote.audio`. Without it, transcripts just skip per-word speaker labels.
 - Node.js + npm available if the session needs HyperFrames or Remotion slots. HyperFrames currently requires Node.js 22+.
-- `yt-dlp`, HyperFrames, Remotion, Manim installed only on first use.
-- First-use animation setup happens inside the slot directory, never at the video-use repo root. HyperFrames can be invoked with `npx --yes hyperframes ...`; Remotion can be scaffolded with `npx create-video@latest` or installed as a project-local dependency before using its `remotion render` command.
+- **Remotion CLI installed globally** (`npm install -g @remotion/cli`, verify with `remotion --version`) so `npx create-video@latest` and `remotion render`/`still` are ready to go in any slot without a first-use install step. `yt-dlp`, HyperFrames, and Manim remain installed lazily on first use.
+- First-use animation setup happens inside the slot directory, never at the video-use repo root. HyperFrames can be invoked with `npx --yes hyperframes ...`; Remotion projects are scaffolded per-slot with `npx create-video@latest --yes --blank --no-tailwind <slot_dir>` (the global CLI just means the scaffold and render commands are instant, not that projects are shared across slots).
+- If a headless Chromium is already provisioned on this machine (e.g. Playwright's `$PLAYWRIGHT_BROWSERS_PATH`), point Remotion at it with `--browser-executable /path/to/headless_shell` on `render`/`still` to skip Remotion downloading its own ~200MB browser. Look for a `headless_shell` or `chrome` binary under that path first; only let Remotion manage its own browser (`npx remotion browser ensure`) if none is found.
 - This skill vendors `skills/manim-video/`. Read its SKILL.md when building a Manim slot.
 
 Helpers (`helpers/transcribe.py`, `helpers/render.py`, etc.) live alongside this SKILL.md. Resolve their paths relative to the directory containing this file — the skill is typically symlinked at `~/.claude/skills/video-use/` or `~/.codex/skills/video-use/`.
@@ -209,7 +210,15 @@ Pick the engine per animation slot. Do not default to Remotion just because the 
 
 For HyperFrames slots, scaffold the slot inside `edit/animations/slot_<id>/` with `npx --yes hyperframes init . --example blank --non-interactive --skip-skills`, build the HTML composition there, run the HyperFrames checks that fit the slot (`lint`, `validate`, and a draft render when practical), then produce the final overlay video with `npx --yes hyperframes render . -o render.mp4` or `--format webm -o render.webm` when alpha is required. Point the EDL overlay `file` at the actual rendered path.
 
-For Remotion slots, keep the Remotion project isolated inside the same slot directory, scaffold with `npx create-video@latest` or install Remotion locally there, render the composition to `render.mp4` with the project-local `remotion render` command, and verify duration and dimensions with `ffprobe`.
+For Remotion slots:
+
+1. Scaffold an isolated project inside `edit/animations/slot_<id>/`, non-interactively: `npx create-video@latest --yes --blank --no-tailwind .` (swap `--blank` for another template flag — `--tiktok`, `--audiogram`, `--three`, etc. — when it fits the animation better). `npm i` inside the slot to install its deps.
+2. Build the composition (`src/`), then list it to get the composition ID: `npx remotion compositions src/index.ts`.
+3. Render straight to the slot's `render.mp4` (or `render.webm` + `--codec=vp8`/`vp9` for alpha) with the project-local `remotion render <entry> <comp-id> render.mp4`. If a pre-provisioned headless Chromium exists on this machine, pass `--browser-executable /path/to/headless_shell` (see Setup) — otherwise Remotion downloads and caches its own on first run via `npx remotion browser ensure`.
+4. Verify duration and dimensions with `ffprobe` before pointing the EDL overlay `file` at it — a silent Remotion render that's the wrong length breaks Hard Rule 4/overlay sync.
+5. `remotion still <entry> <comp-id> <frame>.png --frame=N` is the fast way to sanity-check a single frame's look before committing to a full render.
+
+The global `remotion` CLI (`npm install -g @remotion/cli`, installed once at setup) makes steps 2-5 available immediately in every slot — only the project scaffold in step 1 is per-slot.
 
 None is mandatory. Invent hybrids if useful (e.g., PIL background with a HyperFrames or Remotion layer on top).
 
