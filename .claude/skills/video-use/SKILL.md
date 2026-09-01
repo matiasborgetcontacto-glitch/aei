@@ -73,6 +73,7 @@ Helpers (`helpers/transcribe.py`, `helpers/render.py`, etc.) live alongside this
 ## Helpers
 
 - **`transcribe.py <video>`** — single-file local Whisper (faster-whisper) call. `--num-speakers N` and `--model` optional. Cached.
+- **`align_script.py <media> <script.txt>`** — when you already have the script (one line per shot/scene/image) and need to know when each line is *spoken*. Transcribes per voice-activity segment with Whisper via `sherpa-onnx` (weights from GitHub, so it works where Hugging Face is unreachable) and aligns script to transcript with Needleman-Wunsch, writing a JSON of per-line boundary times. Handles a script that only paraphrases the narration. Use this instead of pacing scenes by word count: a constant-rate guess drifts further out the longer the video runs — on a 10-minute video it put a scene half a minute off.
 - **`transcribe_batch.py <videos_dir>`** — parallel transcription across a directory. Use for multi-take. Keep `--workers` modest (2-4) on CPU-only machines.
 - **`pack_transcripts.py --edit-dir <dir>`** — `transcripts/*.json` → `takes_packed.md` (phrase-level, break on silence ≥ 0.5s).
 - **`timeline_view.py <video> <start> <end>`** — filmstrip + waveform PNG. On-demand visual drill-down. **Not a scan tool** — use it at decision points, not constantly.
