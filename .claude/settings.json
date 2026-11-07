@@ -9,7 +9,16 @@
       "Bash",
       "Read",
       "Write",
-      "Edit"
+      "Edit",
+      "mcp__Higgsfield",
+      "mcp__claude-code-remote",
+      "mcp__vidiq",
+      "ToolSearch",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Skill"
     ]
   }
 }
