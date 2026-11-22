@@ -1,25 +1,27 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
-      "mcp__Higgsfield__sandbox_exec",
-      "mcp__Higgsfield__media_upload",
-      "mcp__Higgsfield__media_confirm",
-      "mcp__Higgsfield__media_import_url",
-      "mcp__Higgsfield__balance",
       "Bash",
       "Read",
       "Write",
       "Edit",
-      "mcp__Higgsfield",
-      "mcp__claude-code-remote",
-      "mcp__vidiq",
-      "ToolSearch",
       "Glob",
       "Grep",
       "WebFetch",
       "WebSearch",
       "Skill",
-      "mcp__Higgsfield__*"
+      "ToolSearch",
+      "SendUserFile",
+      "Agent",
+      "mcp__Higgsfield",
+      "mcp__Higgsfield__*",
+      "mcp__claude-code-remote",
+      "mcp__claude-code-remote__*",
+      "mcp__vidiq",
+      "mcp__vidiq__*",
+      "mcp__Google_Drive",
+      "mcp__Google_Drive__*"
     ]
   }
 }
