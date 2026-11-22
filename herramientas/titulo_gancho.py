@@ -1,6 +1,6 @@
 # Cartel del gancho (igual al de los clips de stream): Montserrat ExtraBold 67, tracking -2,
 # caja blanca redondeada (radio 22), margen 29 lateral / 19 arriba y abajo, interlineado 82,
-# ancho max de linea 690. Texto entre *asteriscos* va en rojo. Se ubica con TY=1074 (caja en y=1104).
+# ancho max de linea 900 (mas horizontal). Texto entre *asteriscos* va en rojo. Se ubica con TY=1074 (caja en y=1104).
 import sys,re
 from PIL import Image,ImageDraw,ImageFont
 txt,out=sys.argv[1],sys.argv[2]
@@ -11,7 +11,7 @@ toks=[];red=False
 for part in re.split(r'(\*)',txt):
     if part=='*': red=not red; continue
     for w in part.split(): toks.append((w,red))
-MAXW=690;sp=F.getlength(' ')+TR
+MAXW=900;sp=F.getlength(' ')+TR
 lines=[];cur=[];cw=0
 for w,r in toks:
     l=wl(w)
