@@ -39,6 +39,7 @@ Responder siempre en español rioplatense.
 
 ## Editor local (sin Higgsfield, para no pedir permisos)
 - `clip.py words SRC.mp4 OUT.json` transcribe; `clip.py cut ...` corta; `clip.py fx NOMBRE 'TITULO *ROJO*' OUT.mp4 --crop W:H:X:Y` aplica todo (logo, click, cartel, zoom).
-- Pantalla dividida: `--split TOPCROP BOTCROP` (sin zoom). Foto de jugador: `--card img.png --card-at 4.3`.
+- Pantalla dividida: `--split TOPCROP BOTCROP` (sin zoom).
+- Diseño libre (ej. juego con 2 cámaras: Davo arriba, tablero al medio, Cobra abajo): `--vf "split=3[x][y][z];..."` con alturas PARES (si no, ffmpeg se rompe). Foto de jugador: `--card img.png --card-at 4.3`.
 - Kick: subtítulos automáticos en `.../media/hls/subtitles/es/playlist.m3u8` para leer el vivo; video en `.../media/hls/1080p60/N.ts` (segmentos de 10 s).
 - Entregar solo con SendUserFile (sin links de CloudFront).

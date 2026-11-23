@@ -2,7 +2,7 @@
 # Uso:
 #   python3 clip.py words SRC.mp4 OUT.json            -> transcribe (palabras con tiempos)
 #   python3 clip.py cut SRC.mp4 SRC.json NAME '[[a,b],...]'   -> NAME.mp4 + NAME.json
-#   python3 clip.py fx NAME 'TITULO *ROJO*' OUT.mp4 [--crop W:H:X:Y] [--split TOPCROP BOTCROP] [--ty 1074] [--card img --card-at 4.3] [--nozoom]
+#   python3 clip.py fx NAME 'TITULO *ROJO*' OUT.mp4 [--crop W:H:X:Y] [--split TOPCROP BOTCROP] [--ty 1074] [--card img --card-at 4.3] [--nozoom] [--vf FILTRO_PROPIO]
 import json, sys, subprocess, os, math
 from PIL import Image
 H = os.path.dirname(os.path.abspath(__file__))
@@ -59,7 +59,7 @@ def fx(name, title, outp, opts):
                 else: f.alpha_composite(r.crop((-dx,0,W,1)),(0,y))
         f.save('%s/%04d.png'%(d,i))
     # zoom
-    if 'nozoom' in opts or 'split' in opts:
+    if 'nozoom' in opts or 'split' in opts or 'vf' in opts:
         ex='1'
     else:
         pts=[0.6]; last=0.6
@@ -73,7 +73,9 @@ def fx(name, title, outp, opts):
             x="min((it-%.2f)/0.35,1)"%pts[i]
             ex="if(lt(it,%.2f),%s,%s)"%(pts[i],ex,"(%.3f+(%.3f)*%s)"%(lv[i-1],lv[i]-lv[i-1],sm(x)))
         ex="(%s)*(1+0.03*it/%.1f)"%(ex,D)
-    if 'split' in opts:
+    if 'vf' in opts:
+        base="[0:v]%s,setsar=1,fps=30000/1001[b]"%opts['vf']
+    elif 'split' in opts:
         top,bot = opts['split']
         base="[0:v]split[sa][sb];[sa]crop=%s,scale=1080:1300[st];[sb]crop=%s,scale=1080:620[su];[st][su]vstack,drawbox=x=0:y=1296:w=1080:h=8:color=white:t=fill,setsar=1,fps=30000/1001[b]"%(top,bot)
     else:
