@@ -43,3 +43,12 @@ Responder siempre en español rioplatense.
 - Diseño libre (ej. juego con 2 cámaras: Davo arriba, tablero al medio, Cobra abajo): `--vf "split=3[x][y][z];..."` con alturas PARES (si no, ffmpeg se rompe). Foto de jugador: `--card img.png --card-at 4.3`.
 - Kick: subtítulos automáticos en `.../media/hls/subtitles/es/playlist.m3u8` para leer el vivo; video en `.../media/hls/1080p60/N.ts` (segmentos de 10 s).
 - Entregar solo con SendUserFile (sin links de CloudFront).
+
+## Mejores momentos de 412 (video largo para YouTube)
+- 412 es el programa (Davo, La Cobra, Teo, Agusneta, Benito y otros) en el vivo de Kick. Se hace el compilado al día siguiente.
+- Referencia: "PERDÓN GENTE - MEJORES MOMENTOS DE 412" (Bombillo Clips, youtube 7U_If2O4vVs).
+  - Horizontal 1920x1080, unos 12–15 min.
+  - Momentos en orden cronológico, cortes secos.
+  - Solo lo gracioso o caliente (la barra, las peleas, los chistes, las cargadas). Nada de charla larga.
+- Título: `GANCHO EN MAYÚSCULAS - MEJORES MOMENTOS DE 412`. Tags: 412, davoo xeneize, la cobraaa, mejores momentos 412.
+- Durante el vivo: anotar los segmentos (índice N del .ts) de cada momento. Después: bajar 1080p, cortar y concatenar.
