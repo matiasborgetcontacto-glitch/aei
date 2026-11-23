@@ -25,9 +25,18 @@ def pop(im):
 
 # fondo
 fondo = Image.open(o.get('fondo', o['p'][0].split(':')[0])).convert('RGB')
-bg = pop(cover(fondo, W, Hh)).filter(ImageFilter.GaussianBlur(3))
-bg = ImageEnhance.Brightness(bg).enhance(0.85)
+bg = pop(cover(fondo, W, Hh)).filter(ImageFilter.GaussianBlur(10))
+bg = ImageEnhance.Color(bg).enhance(1.4)
 canvas = bg.convert('RGBA')
+# luz detrás de la(s) persona(s) + viñeta
+gl = Image.new('L', (W, Hh), 0); dg = ImageDraw.Draw(gl)
+cxs = [0.5] if len(o['p']) == 1 and 't1' not in o else ([0.72] if len(o['p']) == 1 else [0.27, 0.73])
+for c in cxs: dg.ellipse((W*c-330, 40, W*c+330, 760), fill=150)
+gl = gl.filter(ImageFilter.GaussianBlur(90))
+canvas.alpha_composite(Image.merge('RGBA', (Image.new('L',(W,Hh),255),)*3 + (gl,)))
+vg = Image.new('L', (W, Hh), 0); ImageDraw.Draw(vg).ellipse((-200, -150, W+200, Hh+150), fill=255)
+vg = vg.filter(ImageFilter.GaussianBlur(120)).point(lambda v: int((255-v)*0.75))
+canvas.alpha_composite(Image.merge('RGBA', (Image.new('L',(W,Hh),0),)*3 + (vg,)))
 
 from rembg import remove, new_session
 ses = new_session('u2net_human_seg')
@@ -39,7 +48,7 @@ for j, spec in enumerate(o['p']):
         a, b = [float(v) for v in rng.split('-')]; im = im.crop((int(a*im.width), 0, int(b*im.width), im.height))
     cut = remove(pop(im), session=ses)
     cut = cut.crop(cut.getchannel('A').point(lambda v: 255 if v > 40 else 0).getbbox())
-    th = int(Hh*(1.05 if n == 1 else 1.0)); s = th/cut.height
+    th = int(Hh*1.25); s = th/cut.height
     cut = cut.resize((int(cut.width*s), th), Image.LANCZOS)
     maxw = int(W*(0.62 if n == 1 else 0.55))
     if cut.width > maxw: cut = cut.crop(((cut.width-maxw)//2, 0, (cut.width-maxw)//2+maxw, cut.height))
@@ -53,7 +62,7 @@ for j, spec in enumerate(o['p']):
     L.alpha_composite(cut, (pad, pad))
     if n == 1: x = int(W*0.98 - L.width) if 't1' in o else (W-L.width)//2
     else: x = int(W*0.27 - L.width/2) if j == 0 else int(W*0.73 - L.width/2)
-    canvas.alpha_composite(L, (x, Hh - L.height + pad))
+    canvas.alpha_composite(L, (x, 30 - pad))
     if n == 2 and j == 0:
         d = ImageDraw.Draw(canvas)
         d.polygon([(W*0.5+40, 0), (W*0.5+52, 0), (W*0.5-28, Hh), (W*0.5-40, Hh)], fill=(255, 255, 255, 255))
@@ -65,19 +74,20 @@ def skew(img, k=0.22):
 def line(txt, size, fill, band=None):
     f = ImageFont.truetype(os.path.join(H, 'fonts/Anton-Regular.woff'), size)
     d0 = ImageDraw.Draw(Image.new('RGBA', (1, 1)))
-    l, t, r, b = d0.textbbox((0, 0), txt, font=f, stroke_width=8)
+    l, t, r, b = d0.textbbox((0, 0), txt, font=f, stroke_width=11)
     img = Image.new('RGBA', (r-l+40, b-t+30), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
     if band: d.rectangle((0, 6, img.width, img.height-6), fill=band)
-    d.text((20-l, 15-t), txt, font=f, fill=fill, stroke_width=8, stroke_fill=(0, 0, 0))
+    d.text((28-l, 23-t), txt, font=f, fill=(0, 0, 0), stroke_width=11, stroke_fill=(0, 0, 0))
+    d.text((20-l, 15-t), txt, font=f, fill=fill, stroke_width=9, stroke_fill=(0, 0, 0))
     return skew(img)
 
 if 't1' in o:
-    ls = [line(o['t1'].upper(), 118, (255, 255, 255), band=(220, 20, 30))]
-    if 't2' in o: ls.append(line(o['t2'].upper(), 92, (255, 222, 0)))
+    ls = [line(o['t1'].upper(), 150, (255, 255, 255), band=(220, 20, 30))]
+    if 't2' in o: ls.append(line(o['t2'].upper(), 120, (255, 222, 0)))
     blk = Image.new('RGBA', (max(x.width for x in ls), sum(x.height for x in ls)), (0, 0, 0, 0)); y = 0
     for k, x in enumerate(ls): blk.alpha_composite(x, (0 if k == 0 else 40, y)); y += x.height - 8
     blk = blk.rotate(4, expand=True, resample=Image.BICUBIC)
-    if blk.width > W*0.62: blk = blk.resize((int(W*0.62), int(blk.height*W*0.62/blk.width)), Image.LANCZOS)
+    if blk.width > W*0.66: blk = blk.resize((int(W*0.66), int(blk.height*W*0.66/blk.width)), Image.LANCZOS)
     canvas.alpha_composite(blk, (20, Hh - blk.height - 25))
 
 canvas.convert('RGB').save(out, quality=93); print('ok', out)
