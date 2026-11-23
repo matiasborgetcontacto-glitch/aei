@@ -20,12 +20,15 @@ def words(src, out):
     json.dump(w, open(out,'w')); os.remove(wav); print(out, len(w))
 
 def cut(src, srcjson, name, segs):
-    w = json.load(open(srcjson)); out=[]; off=0; fc=''; n=len(segs)
+    w = json.load(open(srcjson)); out=[]; off=0; parts=[]
     for i,(a,b) in enumerate(segs):
-        fc += "[0:v]trim=%s:%s,setpts=PTS-STARTPTS,fps=30[v%d];[0:a]atrim=%s:%s,asetpts=PTS-STARTPTS,afade=t=in:d=0.03,afade=t=out:st=%.3f:d=0.03[a%d];"%(a,b,i,a,b,b-a-0.03,i)
+        pp='%s_p%d.mp4'%(name,i)
+        subprocess.run(['ffmpeg','-v','error','-y','-ss',str(a),'-to',str(b),'-i',src,'-vf','fps=30','-af','afade=t=in:d=0.03,afade=t=out:st=%.3f:d=0.03'%(b-a-0.03),'-c:v','libx264','-preset','veryfast','-crf','14','-threads','2','-c:a','aac','-b:a','192k','-ar','48000',pp],check=True)
+        parts.append(pp)
         out += [[s-a+off,e-a+off,t] for s,e,t in w if a<=s<b]; off += b-a
-    fc += ''.join('[v%d][a%d]'%(i,i) for i in range(n))+'concat=n=%d:v=1:a=1[v][a]'%n
-    subprocess.run(['ffmpeg','-v','error','-y','-i',src,'-filter_complex',fc,'-map','[v]','-map','[a]','-c:v','libx264','-preset','veryfast','-crf','14','-c:a','aac','-b:a','192k',name+'.mp4'], check=True)
+    open(name+'_l.txt','w').write(''.join("file '%s'\n"%p for p in parts))
+    subprocess.run(['ffmpeg','-v','error','-y','-f','concat','-safe','0','-i',name+'_l.txt','-c','copy',name+'.mp4'],check=True)
+    for p in parts: os.remove(p)
     json.dump(out, open(name+'.json','w')); print(name, round(off,2))
 
 def fx(name, title, outp, opts):
@@ -84,7 +87,7 @@ def fx(name, title, outp, opts):
         fc+=";[%d:v]format=rgba,fade=in:st=%.2f:d=0.2:alpha=1[c];[b1][c]overlay=(W-w)/2:1185:shortest=1:enable='gte(t,%.2f)'[b2]"%(k,at,at); last='b2'; k+=1
     inp+=['-loop','1','-i',os.path.join(H,'kick_logo.png'),'-i',os.path.join(H,'click.mp3')]
     fc+=";[%s][%d:v]overlay=(W-w)/2:35:shortest=1,format=yuv420p[v];[0:a]afade=t=out:st=%.2f:d=0.25[a0];[%d:a]volume=0.9[ck];[a0][ck]amix=inputs=2:duration=first:normalize=0[au]"%(last,k,D-0.25,k+1)
-    subprocess.run(['ffmpeg','-nostdin','-v','error','-y']+inp+['-filter_complex',fc,'-map','[v]','-map','[au]','-t','%.2f'%D,'-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-b:a','192k','-movflags','+faststart',outp],check=True)
+    subprocess.run(['ffmpeg','-nostdin','-v','error','-y']+inp+['-filter_complex',fc,'-map','[v]','-map','[au]','-t','%.2f'%D,'-c:v','libx264','-preset','medium','-crf','18','-threads','2','-c:a','aac','-b:a','192k','-movflags','+faststart',outp],check=True)
     print('ok',outp)
 
 if __name__=='__main__':
