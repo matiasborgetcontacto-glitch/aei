@@ -52,5 +52,6 @@ Responder siempre en español rioplatense.
   - Solo lo gracioso o caliente (la barra, las peleas, los chistes, las cargadas). Nada de charla larga.
 - **Intro (cold open, unos 5–8 s):** el momento más picante del programa en blanco y negro, con una barra negra abajo y la frase clave en blanco, en mayúsculas y bold (ej.: "QUE SE VAYAN TODOS"). Después arranca el compilado en color.
 - Miniatura: los protagonistas con la cara del momento (ej.: manos juntas pidiendo perdón) más el texto del gancho.
+  - `miniatura.py FOTO.jpg 'TEXTO *ROJO*' OUT.jpg --x 0.5 --zoom 1.3`: 1280x720, colores subidos, degradé oscuro abajo, texto gigante amarillo con la parte clave en rojo y borde negro. Elegir un cuadro con caras bien expresivas.
 - Título: `GANCHO EN MAYÚSCULAS - MEJORES MOMENTOS DE 412`. Tags: 412, davoo xeneize, la cobraaa, mejores momentos 412.
 - Durante el vivo: anotar los segmentos (índice N del .ts) de cada momento. Después: bajar 1080p, cortar y concatenar.
