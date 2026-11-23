@@ -22,7 +22,7 @@ Responder siempre en español rioplatense.
   - La caja va en y≈1104 (TY=1074).
   - Entra con un pop (0,25 s), queda hasta ~3,8 s y sale con distorsión de ondas (0,5 s).
   - No tiene que tapar caras.
-- **Zoom fluido**: arranca acercándose (1,0 a 1,12 en 0,6 s) y cambia de plano suave (1,12 ↔ 1,24) al final de cada frase, cada 3,5 s como mínimo.
+- **Zoom fluido** (solo con cámara vertical; **en pantalla dividida NO hay zoom**): arranca acercándose (1,0 a 1,12 en 0,6 s) y cambia de plano suave (1,12 ↔ 1,24) al final de cada frase, cada 3,5 s como mínimo.
 
 ## Entrega
 - Nombre del archivo: `N_nombre_TT-FB-YT.mp4`.
@@ -36,3 +36,9 @@ Responder siempre en español rioplatense.
 - YouTube bloquea las descargas desde el servidor. Pedir el video por Google Drive con "Cualquier persona con el enlace" y bajarlo con `drive.usercontent.google.com/download?id=...&confirm=t`.
 - El sandbox se borra a las 24 h sin uso. Los recursos (logo, click, scripts) se guardan en esta carpeta del repo.
 - Script de efectos de referencia: `efectos_clip.py`. Agregarle el logo, el click y el cartel nuevo, y sacarle los subtítulos.
+
+## Editor local (sin Higgsfield, para no pedir permisos)
+- `clip.py words SRC.mp4 OUT.json` transcribe; `clip.py cut ...` corta; `clip.py fx NOMBRE 'TITULO *ROJO*' OUT.mp4 --crop W:H:X:Y` aplica todo (logo, click, cartel, zoom).
+- Pantalla dividida: `--split TOPCROP BOTCROP` (sin zoom). Foto de jugador: `--card img.png --card-at 4.3`.
+- Kick: subtítulos automáticos en `.../media/hls/subtitles/es/playlist.m3u8` para leer el vivo; video en `.../media/hls/1080p60/N.ts` (segmentos de 10 s).
+- Entregar solo con SendUserFile (sin links de CloudFront).

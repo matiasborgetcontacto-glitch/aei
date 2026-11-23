@@ -4,7 +4,7 @@
 import sys,re
 from PIL import Image,ImageDraw,ImageFont
 txt,out=sys.argv[1],sys.argv[2]
-F=ImageFont.truetype('/usr/share/fonts/truetype/higgsfield/Montserrat-ExtraBold.ttf',67)
+F=ImageFont.truetype(''+__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)),'fonts','Montserrat-ExtraBold.ttf')+'',67)
 TR=-2
 def wl(w): return sum(F.getlength(c)+TR for c in w)-TR
 toks=[];red=False
