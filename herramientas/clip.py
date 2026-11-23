@@ -13,7 +13,9 @@ def words(src, out):
     m = WhisperModel("small", device="cpu", compute_type="int8")
     wav = out + '.wav'
     subprocess.run(['ffmpeg','-v','error','-y','-i',src,'-ac','1','-ar','16000',wav], check=True)
-    seg,_ = m.transcribe(wav, language='es', word_timestamps=True)
+    import numpy as np
+    raw = subprocess.run(['ffmpeg','-v','error','-i',wav,'-f','f32le','-ac','1','-ar','16000','-'],capture_output=True).stdout
+    seg,_ = m.transcribe(np.frombuffer(raw,np.float32), language='es', word_timestamps=True)
     w = [[x.start, x.end, x.word] for s in seg for x in s.words]
     json.dump(w, open(out,'w')); os.remove(wav); print(out, len(w))
 
