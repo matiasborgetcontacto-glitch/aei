@@ -56,6 +56,7 @@ Responder siempre en español rioplatense.
   - **Preferido (como Bombillo):** `--lados FRAME1.jpg:x:y:w,FRAME2.jpg:x:y:w`. Cada uno en su cámara del stream (sin recortar el fondo), mitad y mitad con una línea blanca diagonal. Los cuadros se buscan en los picos de volumen (risas, gritos) y se eligen caras exageradas: manos en la cabeza, gritando, riendo.
 - Título: `GANCHO EN MAYÚSCULAS - MEJORES MOMENTOS DE 412`. Tags: 412, davoo xeneize, la cobraaa, mejores momentos 412.
 - Durante el vivo: anotar los segmentos (índice N del .ts) de cada momento. Después: bajar 1080p, cortar y concatenar.
+- Armado: `compilado.py plan.json OUT.mp4`. El plan tiene la intro en blanco y negro (src, a, b, texto) y las partes en orden ([archivo, a, b]).
 
 ### Miniatura con IA local (mejor calidad, estilo MaxClips)
 1. Buscar cuadros con caras exageradas en los picos de volumen (risas, gritos) del stream, en 1080p.
