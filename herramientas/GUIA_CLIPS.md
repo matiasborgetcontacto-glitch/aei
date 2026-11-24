@@ -65,3 +65,17 @@ Responder siempre en español rioplatense.
 3. `miniatura.py OUT.jpg --bg verde --siluetas 1 --atras barra_m.png,barra.png --p cobra.png --p davo.png`:
    - fondo verde con humo, protagonistas grandes con borde blanco y brillo verde;
    - para el 412, siluetas negras con "?" atrás.
+
+### Miniatura con Google Flow (lo que mejor quedó, aprobado por el usuario)
+- Yo busco en el stream los cuadros con las caras más exageradas, los recorto en alta calidad (ref_*.jpg) y se los mando junto con el prompt. El usuario genera la imagen en flow.google.com con Nano Banana.
+- Prompt base (cambiar las descripciones de las personas y del fondo según el video):
+```
+YouTube thumbnail, 16:9, 1280x720, hyper sharp, high detail, vibrant saturated colors.
+Use the uploaded reference photos and keep both faces EXACTLY identical (same face, glasses, beard, hair, clothes):
+- LEFT: the man from image 1 (...), laughing very hard with his mouth wide open, head slightly tilted back.
+- RIGHT: the man from image 2 (...), big smile looking straight at the camera.
+Both shown from the chest up, big in the frame, slightly overlapping in the center, each with a thin clean white outline and a strong neon green glow around their silhouette.
+BACKGROUND: dark background with neon green glow and green smoke, bright light behind them, energetic soccer-streamer style.
+Behind them, on the far left and far right, two black silhouettes of hooded/masked football fans (based on image 3) with a big white "?" on each head.
+Professional photo cutout, no extra people, no text, no logos, no watermarks, faces sharp and well lit.
+```
