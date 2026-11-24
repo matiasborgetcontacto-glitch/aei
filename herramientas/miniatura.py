@@ -105,7 +105,7 @@ if 't1' in o:
     blk = Image.new('RGBA', (max(x.width for x in ls), sum(x.height for x in ls)), (0, 0, 0, 0)); y = 0
     for k, x in enumerate(ls): blk.alpha_composite(x, (0 if k == 0 else 40, y)); y += x.height - 8
     blk = blk.rotate(4, expand=True, resample=Image.BICUBIC)
-    if blk.width > W*0.66: blk = blk.resize((int(W*0.66), int(blk.height*W*0.66/blk.width)), Image.LANCZOS)
+    if blk.width > W*0.5: blk = blk.resize((int(W*0.5), int(blk.height*W*0.5/blk.width)), Image.LANCZOS)
     canvas.alpha_composite(blk, (20, Hh - blk.height - 25))
 
 canvas.convert('RGB').save(out, quality=93); print('ok', out)
