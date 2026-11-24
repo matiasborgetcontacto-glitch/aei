@@ -37,7 +37,8 @@ def compose(src, srcjson, name, parts):
     w = json.load(open(srcjson)); out=[]; off=0; pp=[]
     for i,(a,b,m) in enumerate(parts):
         k=m.split(':')
-        if k[0]=='full': vf="crop=608:1080:%s:0,scale=1080:1920"%k[1]
+        if k[0]=='vf': vf=m[3:]
+        elif k[0]=='full': vf="crop=608:1080:%s:0,scale=1080:1920"%k[1]
         else: vf="split[x][y];[x]crop=820:728:%s:60,scale=1080:960[t];[y]crop=820:728:%s:60,scale=1080:960[u];[t][u]vstack,drawbox=x=0:y=956:w=1080:h=8:color=white:t=fill"%(k[1],k[2])
         f='%s_q%d.mp4'%(name,i)
         subprocess.run(['ffmpeg','-v','error','-y','-ss',str(a),'-to',str(b),'-i',src,'-filter_complex','[0:v]fps=30,'+vf+',setsar=1[v]','-map','[v]','-map','0:a','-af','afade=t=in:d=0.03,afade=t=out:st=%.3f:d=0.03'%(b-a-0.03),'-c:v','libx264','-preset','veryfast','-crf','14','-threads','2','-c:a','aac','-b:a','192k','-ar','48000',f],check=True)
