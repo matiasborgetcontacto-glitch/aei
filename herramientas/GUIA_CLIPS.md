@@ -11,6 +11,7 @@ Responder siempre en español rioplatense.
 
 ## Formato del video (1080x1920)
 - Recorte vertical de la cámara. **Nunca fondo borroso.**
+- **Nunca estirar la imagen**: el recorte vertical siempre en 9:16 (608x1080). `clip.py` ya lo fuerza.
 - Dos personas: pantalla dividida en dos cuadrados (invitado arriba, streamer abajo) con una línea blanca en el medio.
 - Pantalla o juego con cámara chica: contenido arriba y cámara abajo.
 - **SIN SUBTÍTULOS.**

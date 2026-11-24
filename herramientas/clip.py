@@ -96,6 +96,10 @@ def fx(name, title, outp, opts):
         top,bot = opts['split']
         base="[0:v]split[sa][sb];[sa]crop=%s,scale=1080:1300[st];[sb]crop=%s,scale=1080:620[su];[st][su]vstack,drawbox=x=0:y=1296:w=1080:h=8:color=white:t=fill,setsar=1,fps=30000/1001[b]"%(top,bot)
     else:
+        cw,ch,cx,cy=[int(float(v)) for v in opts.get('crop','608:1080:656:0').split(':')]
+        if abs(cw/ch-0.5625)>0.005:  # nunca estirar: forzar 9:16 centrado
+            nw=int(round(ch*0.5625/2))*2; cx+= (cw-nw)//2; cw=nw
+        opts['crop']='%d:%d:%d:%d'%(cw,ch,cx,cy)
         base="[0:v]crop=%s,scale=1080:1920:flags=lanczos,setsar=1,zoompan=z='%s':x='iw/2-(iw/zoom/2)':y='ih*0.30-(ih/zoom*0.30)':d=1:s=1080x1920:fps=30000/1001[b]"%(opts.get('crop','608:1080:656:0'),ex)
     fc=base+";[b][1:v]overlay=0:%d:eof_action=pass[b1]"%ty
     inp=['-i',name+'.mp4','-framerate','30000/1001','-i',d+'/%04d.png']
