@@ -4,6 +4,8 @@
 # Uso:
 #   python3 miniatura.py OUT.jpg --fondo FRAME.jpg --p FOTO1.jpg[:x0-x1] [--p FOTO2.jpg[:x0-x1]] [--t1 'EL UNITED SE VA'] [--t2 'Y DAVO LO SABE']
 #   x0-x1[-yb] (opcional): franja horizontal de la foto donde está la persona (en fracción, ej. 0.3-0.7).
+#   --bg verde: fondo verde con humo y brillo (estilo MaxClips); --atras FOTO:x0-x1[,FOTO2...]: gente chica y oscura atrás.
+#   --lados F1:x:y:w,F2:x:y:w: cada uno en su cámara (mitad y mitad).
 import sys, os
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter, ImageChops
 H = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +41,20 @@ if 'lados' in o:
     d = ImageDraw.Draw(canvas); d.line([(W/2+40, -5), (W/2-40, Hh+5)], fill=(255, 255, 255), width=12)
     o['p'] = []
 # fondo
-if 'lados' not in o:
+if o.get('bg') == 'verde':
+    import random; random.seed(4)
+    canvas = Image.new('RGBA', (W, Hh), (4, 10, 6, 255))
+    lay = Image.new('RGBA', (W, Hh), (0, 0, 0, 0)); dl = ImageDraw.Draw(lay)
+    for _ in range(70):
+        x = random.choice([random.uniform(-100, 300), random.uniform(W-300, W+100), random.uniform(0, W)]); y = random.uniform(Hh*0.2, Hh+80)
+        r = random.uniform(60, 220); g = random.randint(150, 255)
+        dl.ellipse((x-r, y-r, x+r, y+r), fill=(30, g, 40, random.randint(40, 110)))
+    lay = lay.filter(ImageFilter.GaussianBlur(45)); canvas.alpha_composite(lay)
+    c = Image.new('L', (W, Hh), 0); ImageDraw.Draw(c).ellipse((W*0.2, Hh*0.05, W*0.8, Hh*1.2), fill=120)
+    c = c.filter(ImageFilter.GaussianBlur(120))
+    canvas.alpha_composite(Image.merge('RGBA', (Image.new('L', (W, Hh), 120), Image.new('L', (W, Hh), 255), Image.new('L', (W, Hh), 140), c)))
+    o['_glow'] = (60, 255, 80)
+elif 'lados' not in o:
     fondo = Image.open(o.get('fondo', o['p'][0].split(':')[0])).convert('RGB')
     bg = pop(cover(fondo, W, Hh)).filter(ImageFilter.GaussianBlur(10))
     bg = ImageEnhance.Color(bg).enhance(1.4)
@@ -57,31 +72,48 @@ if 'lados' not in o:
 from rembg import remove, new_session
 ses = new_session('u2net_human_seg')
 n = len(o['p'])
-for j, spec in enumerate(o['p']):
+def persona(spec, th0, maxw):
     path, _, rng = spec.partition(':')
-    im = Image.open(path).convert('RGB')
-    yb = 1.0
+    im = Image.open(path).convert('RGB'); yb = 1.0
     if rng:
         v = [float(x) for x in rng.split('-')]; yb = v[2] if len(v) > 2 else 1.0
         im = im.crop((int(v[0]*im.width), 0, int(v[1]*im.width), int(yb*im.height)))
     cut = remove(pop(im), session=ses)
     cut = cut.crop(cut.getchannel('A').point(lambda v: 255 if v > 40 else 0).getbbox())
-    th = max(int(Hh*1.25*yb), Hh+20); s = th/cut.height
+    th = max(int(th0*yb), Hh+20) if th0 > Hh else int(th0*yb); s = th/cut.height
     cut = cut.resize((int(cut.width*s), th), Image.LANCZOS)
-    maxw = int(W*(0.62 if n == 1 else 0.55))
     if cut.width > maxw: cut = cut.crop(((cut.width-maxw)//2, 0, (cut.width-maxw)//2+maxw, cut.height))
-    # borde blanco + sombra
-    A = cut.getchannel('A')
-    pad = 20; L = Image.new('RGBA', (cut.width+2*pad, cut.height+2*pad), (0, 0, 0, 0))
+    return cut
+
+def borde(cut, glow=None, grueso=13):
+    A = cut.getchannel('A'); pad = 40
+    L = Image.new('RGBA', (cut.width+2*pad, cut.height+2*pad), (0, 0, 0, 0))
     Ab = Image.new('L', L.size, 0); Ab.paste(A, (pad, pad))
-    sh = Ab.filter(ImageFilter.GaussianBlur(14)).point(lambda v: int(v*0.7))
-    st = Ab.filter(ImageFilter.MaxFilter(13))
-    L.paste((0, 0, 0, 255), (12, 8), sh); L.paste((255, 255, 255, 255), (0, 0), st)
-    L.alpha_composite(cut, (pad, pad))
+    if glow:
+        g = Ab.filter(ImageFilter.MaxFilter(15)).filter(ImageFilter.GaussianBlur(22))
+        L.paste(glow + (255,), (0, 0), g)
+    else:
+        sh = Ab.filter(ImageFilter.GaussianBlur(14)).point(lambda v: int(v*0.7)); L.paste((0, 0, 0, 255), (12, 8), sh)
+    L.paste((255, 255, 255, 255), (0, 0), Ab.filter(ImageFilter.MaxFilter(grueso)))
+    L.alpha_composite(cut, (pad, pad)); return L, pad
+
+glow = o.get('_glow')
+# gente de atrás (más chica y oscura)
+if 'atras' in o:
+    sp = o['atras'].split(','); pos = [0.88] if len(sp) == 1 else [0.13, 0.87, 0.5][:len(sp)]
+    for spec, cx in zip(sp, pos):
+        cut = persona(spec, Hh*0.95, int(W*0.33))
+        cut = Image.merge('RGBA', [ch.point(lambda v: int(v*0.35)) for ch in cut.split()[:3]] + [cut.getchannel('A')])
+        L, pad = borde(cut, glow, 7)
+        canvas.alpha_composite(L, (int(W*cx - L.width/2), Hh - L.height + pad))
+for j, spec in enumerate(o['p']):
+    cut = persona(spec, Hh*(1.02 if glow else 1.25), int(W*(0.62 if n == 1 else (0.5 if glow else 0.55))))
+    L, pad = borde(cut, glow, 11 if glow else 13)
     if n == 1: x = int(W*0.98 - L.width) if 't1' in o else (W-L.width)//2
+    elif glow: x = int(W*0.31 - L.width/2) if j == 0 else int(W*0.69 - L.width/2)
     else: x = int(W*0.27 - L.width/2) if j == 0 else int(W*0.73 - L.width/2)
-    canvas.alpha_composite(L, (x, 30 - pad))
-    if n == 2 and j == 0:
+    canvas.alpha_composite(L, (x, (110 if glow else 30) - pad))
+    if n == 2 and j == 0 and not glow:
         d = ImageDraw.Draw(canvas)
         d.polygon([(W*0.5+40, 0), (W*0.5+52, 0), (W*0.5-28, Hh), (W*0.5-40, Hh)], fill=(255, 255, 255, 255))
 
