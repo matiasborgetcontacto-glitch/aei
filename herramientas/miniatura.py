@@ -23,20 +23,36 @@ def pop(im):
     im = ImageEnhance.Color(im).enhance(1.35); im = ImageEnhance.Contrast(im).enhance(1.12)
     return ImageEnhance.Sharpness(im).enhance(1.6)
 
+if 'lados' in o:
+    # modo "dos cámaras": cada uno en su propio fondo del stream, mitad y mitad con línea diagonal
+    canvas = Image.new('RGBA', (W, Hh))
+    specs = o['lados'].split(',')
+    for j, sp in enumerate(specs):
+        path, x, y, w = sp.split(':'); x, y, w = int(x), int(y), int(w)
+        im = Image.open(path).convert('RGB'); h = int(w*Hh/(W/2+60))
+        im = pop(im.crop((x, y, x+w, y+h)).resize((W//2+60, Hh), Image.LANCZOS))
+        im = im.filter(ImageFilter.UnsharpMask(2, 80, 2))
+        m = Image.new('L', (W, Hh), 0); dm = ImageDraw.Draw(m)
+        if j == 0: dm.polygon([(0, 0), (W/2+40, 0), (W/2-40, Hh), (0, Hh)], fill=255); canvas.paste(im, (0, 0), m.crop((0, 0, W//2+60, Hh)))
+        else:
+            dm.polygon([(W/2+40, 0), (W, 0), (W, Hh), (W/2-40, Hh)], fill=255); canvas.paste(im, (W//2-60, 0), m.crop((W//2-60, 0, W, Hh)))
+    d = ImageDraw.Draw(canvas); d.line([(W/2+40, -5), (W/2-40, Hh+5)], fill=(255, 255, 255), width=12)
+    o['p'] = []
 # fondo
-fondo = Image.open(o.get('fondo', o['p'][0].split(':')[0])).convert('RGB')
-bg = pop(cover(fondo, W, Hh)).filter(ImageFilter.GaussianBlur(10))
-bg = ImageEnhance.Color(bg).enhance(1.4)
-canvas = bg.convert('RGBA')
-# luz detrás de la(s) persona(s) + viñeta
-gl = Image.new('L', (W, Hh), 0); dg = ImageDraw.Draw(gl)
-cxs = [0.5] if len(o['p']) == 1 and 't1' not in o else ([0.72] if len(o['p']) == 1 else [0.27, 0.73])
-for c in cxs: dg.ellipse((W*c-330, 40, W*c+330, 760), fill=150)
-gl = gl.filter(ImageFilter.GaussianBlur(90))
-canvas.alpha_composite(Image.merge('RGBA', (Image.new('L',(W,Hh),255),)*3 + (gl,)))
-vg = Image.new('L', (W, Hh), 0); ImageDraw.Draw(vg).ellipse((-200, -150, W+200, Hh+150), fill=255)
-vg = vg.filter(ImageFilter.GaussianBlur(120)).point(lambda v: int((255-v)*0.75))
-canvas.alpha_composite(Image.merge('RGBA', (Image.new('L',(W,Hh),0),)*3 + (vg,)))
+if 'lados' not in o:
+    fondo = Image.open(o.get('fondo', o['p'][0].split(':')[0])).convert('RGB')
+    bg = pop(cover(fondo, W, Hh)).filter(ImageFilter.GaussianBlur(10))
+    bg = ImageEnhance.Color(bg).enhance(1.4)
+    canvas = bg.convert('RGBA')
+    # luz detrás de la(s) persona(s) + viñeta
+    gl = Image.new('L', (W, Hh), 0); dg = ImageDraw.Draw(gl)
+    cxs = [0.5] if len(o['p']) == 1 and 't1' not in o else ([0.72] if len(o['p']) == 1 else [0.27, 0.73])
+    for c in cxs: dg.ellipse((W*c-330, 40, W*c+330, 760), fill=150)
+    gl = gl.filter(ImageFilter.GaussianBlur(90))
+    canvas.alpha_composite(Image.merge('RGBA', (Image.new('L',(W,Hh),255),)*3 + (gl,)))
+    vg = Image.new('L', (W, Hh), 0); ImageDraw.Draw(vg).ellipse((-200, -150, W+200, Hh+150), fill=255)
+    vg = vg.filter(ImageFilter.GaussianBlur(120)).point(lambda v: int((255-v)*0.75))
+    canvas.alpha_composite(Image.merge('RGBA', (Image.new('L',(W,Hh),0),)*3 + (vg,)))
 
 from rembg import remove, new_session
 ses = new_session('u2net_human_seg')
