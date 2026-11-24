@@ -56,3 +56,12 @@ Responder siempre en español rioplatense.
   - **Preferido (como Bombillo):** `--lados FRAME1.jpg:x:y:w,FRAME2.jpg:x:y:w`. Cada uno en su cámara del stream (sin recortar el fondo), mitad y mitad con una línea blanca diagonal. Los cuadros se buscan en los picos de volumen (risas, gritos) y se eligen caras exageradas: manos en la cabeza, gritando, riendo.
 - Título: `GANCHO EN MAYÚSCULAS - MEJORES MOMENTOS DE 412`. Tags: 412, davoo xeneize, la cobraaa, mejores momentos 412.
 - Durante el vivo: anotar los segmentos (índice N del .ts) de cada momento. Después: bajar 1080p, cortar y concatenar.
+
+### Miniatura con IA local (mejor calidad, estilo MaxClips)
+1. Buscar cuadros con caras exageradas en los picos de volumen (risas, gritos) del stream, en 1080p.
+2. `mejorar.py FRAME.jpg X0-X1-YB OUT.png`: agranda con Real-ESRGAN, mejora la cara con GFPGAN y recorta con rembg birefnet-portrait. Tarda unos 3 min por persona.
+   - Instalación: `pip install spandrel "opencv-python-headless<5" rembg onnxruntime` y torch para CPU.
+   - Modelos en /home/user/work/models: RealESRGAN_x4plus.pth (github xinntao/Real-ESRGAN v0.1.0) y GFPGANv1.4.pth (github TencentARC/GFPGAN v1.3.0).
+3. `miniatura.py OUT.jpg --bg verde --siluetas 1 --atras barra_m.png,barra.png --p cobra.png --p davo.png`:
+   - fondo verde con humo, protagonistas grandes con borde blanco y brillo verde;
+   - para el 412, siluetas negras con "?" atrás.

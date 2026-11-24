@@ -74,6 +74,11 @@ ses = new_session('u2net_human_seg')
 n = len(o['p'])
 def persona(spec, th0, maxw):
     path, _, rng = spec.partition(':')
+    if path.endswith('.png'):  # recorte ya hecho con mejorar.py
+        cut = Image.open(path).convert('RGBA'); s = th0/cut.height if th0 <= Hh else max(th0, Hh+20)/cut.height
+        cut = cut.resize((int(cut.width*s), int(cut.height*s)), Image.LANCZOS)
+        if cut.width > maxw: cut = cut.crop(((cut.width-maxw)//2, 0, (cut.width-maxw)//2+maxw, cut.height))
+        return cut
     im = Image.open(path).convert('RGB'); yb = 1.0
     if rng:
         v = [float(x) for x in rng.split('-')]; yb = v[2] if len(v) > 2 else 1.0
@@ -103,16 +108,23 @@ if 'atras' in o:
     sp = o['atras'].split(','); pos = [0.88] if len(sp) == 1 else [0.13, 0.87, 0.5][:len(sp)]
     for spec, cx in zip(sp, pos):
         cut = persona(spec, Hh*0.95, int(W*0.33))
-        cut = Image.merge('RGBA', [ch.point(lambda v: int(v*0.35)) for ch in cut.split()[:3]] + [cut.getchannel('A')])
+        if 'siluetas' in o:
+            cut = Image.merge('RGBA', [Image.new('L', cut.size, 8)]*3 + [cut.getchannel('A')])
+        else:
+            cut = Image.merge('RGBA', [ch.point(lambda v: int(v*0.35)) for ch in cut.split()[:3]] + [cut.getchannel('A')])
         L, pad = borde(cut, glow, 7)
+        if 'siluetas' in o:
+            fq = ImageFont.truetype(os.path.join(H, 'fonts/Anton-Regular.woff'), int(L.width*0.32))
+            dq = ImageDraw.Draw(L); A = L.getchannel('A'); bb = A.getbbox(); hy = bb[1] + int(L.width*0.12)
+            dq.text((L.width/2, hy), '?', font=fq, fill=(255, 255, 255), anchor='mt', stroke_width=6, stroke_fill=(0, 0, 0))
         canvas.alpha_composite(L, (int(W*cx - L.width/2), Hh - L.height + pad))
 for j, spec in enumerate(o['p']):
-    cut = persona(spec, Hh*(1.02 if glow else 1.25), int(W*(0.62 if n == 1 else (0.5 if glow else 0.55))))
+    cut = persona(spec, Hh*(1.12 if glow else 1.25), int(W*(0.62 if n == 1 else (0.5 if glow else 0.55))))
     L, pad = borde(cut, glow, 11 if glow else 13)
     if n == 1: x = int(W*0.98 - L.width) if 't1' in o else (W-L.width)//2
     elif glow: x = int(W*0.31 - L.width/2) if j == 0 else int(W*0.69 - L.width/2)
     else: x = int(W*0.27 - L.width/2) if j == 0 else int(W*0.73 - L.width/2)
-    canvas.alpha_composite(L, (x, (110 if glow else 30) - pad))
+    canvas.alpha_composite(L, (x, (95 if glow else 30) - pad))
     if n == 2 and j == 0 and not glow:
         d = ImageDraw.Draw(canvas)
         d.polygon([(W*0.5+40, 0), (W*0.5+52, 0), (W*0.5-28, Hh), (W*0.5-40, Hh)], fill=(255, 255, 255, 255))
