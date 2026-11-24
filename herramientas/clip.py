@@ -2,6 +2,7 @@
 # Uso:
 #   python3 clip.py words SRC.mp4 OUT.json            -> transcribe (palabras con tiempos)
 #   python3 clip.py cut SRC.mp4 SRC.json NAME '[[a,b],...]'   -> NAME.mp4 + NAME.json
+#   python3 clip.py compose SRC.mp4 SRC.json NAME '[[a,b,"full:X"],[a,b,"split:XTOP:XBOT"]]'  -> vertical ya armado (usar fx con --vf scale=1080:1920)
 #   python3 clip.py fx NAME 'TITULO *ROJO*' OUT.mp4 [--crop W:H:X:Y] [--split TOPCROP BOTCROP] [--ty 1074] [--card img --card-at 4.3] [--nozoom] [--vf FILTRO_PROPIO]
 import json, sys, subprocess, os, math
 from PIL import Image
@@ -29,6 +30,21 @@ def cut(src, srcjson, name, segs):
     open(name+'_l.txt','w').write(''.join("file '%s'\n"%p for p in parts))
     subprocess.run(['ffmpeg','-v','error','-y','-f','concat','-safe','0','-i',name+'_l.txt','-c','copy',name+'.mp4'],check=True)
     for p in parts: os.remove(p)
+    json.dump(out, open(name+'.json','w')); print(name, round(off,2))
+
+def compose(src, srcjson, name, parts):
+    # parts: [[a,b,'full:X'] o [a,b,'split:XTOP:XBOT']] -> video vertical 1080x1920 ya armado
+    w = json.load(open(srcjson)); out=[]; off=0; pp=[]
+    for i,(a,b,m) in enumerate(parts):
+        k=m.split(':')
+        if k[0]=='full': vf="crop=608:1080:%s:0,scale=1080:1920"%k[1]
+        else: vf="split[x][y];[x]crop=820:728:%s:60,scale=1080:960[t];[y]crop=820:728:%s:60,scale=1080:960[u];[t][u]vstack,drawbox=x=0:y=956:w=1080:h=8:color=white:t=fill"%(k[1],k[2])
+        f='%s_q%d.mp4'%(name,i)
+        subprocess.run(['ffmpeg','-v','error','-y','-ss',str(a),'-to',str(b),'-i',src,'-filter_complex','[0:v]fps=30,'+vf+',setsar=1[v]','-map','[v]','-map','0:a','-af','afade=t=in:d=0.03,afade=t=out:st=%.3f:d=0.03'%(b-a-0.03),'-c:v','libx264','-preset','veryfast','-crf','14','-threads','2','-c:a','aac','-b:a','192k','-ar','48000',f],check=True)
+        pp.append(f); out += [[s-a+off,e-a+off,t] for s,e,t in w if a<=s<b]; off += b-a
+    open(name+'_l.txt','w').write(''.join("file '%s'\n"%p for p in pp))
+    subprocess.run(['ffmpeg','-v','error','-y','-f','concat','-safe','0','-i',name+'_l.txt','-c','copy',name+'.mp4'],check=True)
+    for p in pp: os.remove(p)
     json.dump(out, open(name+'.json','w')); print(name, round(off,2))
 
 def fx(name, title, outp, opts):
@@ -95,6 +111,7 @@ def fx(name, title, outp, opts):
 if __name__=='__main__':
     c=sys.argv[1]
     if c=='words': words(sys.argv[2],sys.argv[3])
+    elif c=='compose': compose(sys.argv[2],sys.argv[3],sys.argv[4],json.loads(sys.argv[5]))
     elif c=='cut': cut(sys.argv[2],sys.argv[3],sys.argv[4],json.loads(sys.argv[5]))
     elif c=='fx':
         a=sys.argv[5:]; o={}; i=0
