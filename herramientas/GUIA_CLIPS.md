@@ -70,6 +70,7 @@ Responder siempre en español rioplatense.
 
 ### Miniatura con Google Flow (lo que mejor quedó, aprobado por el usuario)
 - Yo busco en el stream los cuadros con las caras más exageradas, los recorto en alta calidad (ref_*.jpg) y se los mando junto con el prompt. El usuario genera la imagen en flow.google.com con Nano Banana.
+- Si la IA no respeta una cara (pasó con La Cobra): `cambiar_cara.py MINIATURA.jpg OUT.jpg CARA1.jpg CARA2.jpg --cual derecha` pone la cara real (insightface inswapper + GFPGAN). Modelos en /home/user/work/models (inswapper_128.onnx de huggingface ezioruan/inswapper_128.onnx).
 - Prompt base (cambiar las descripciones de las personas y del fondo según el video):
 ```
 YouTube thumbnail, 16:9, 1280x720, hyper sharp, high detail, vibrant saturated colors.
