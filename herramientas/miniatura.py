@@ -3,7 +3,7 @@
 # texto opcional en cursiva gruesa: linea 1 blanca sobre banda roja, linea 2 amarilla.
 # Uso:
 #   python3 miniatura.py OUT.jpg --fondo FRAME.jpg --p FOTO1.jpg[:x0-x1] [--p FOTO2.jpg[:x0-x1]] [--t1 'EL UNITED SE VA'] [--t2 'Y DAVO LO SABE']
-#   x0-x1 (opcional): franja horizontal de la foto donde está la persona (en fracción, ej. 0.3-0.7).
+#   x0-x1[-yb] (opcional): franja horizontal de la foto donde está la persona (en fracción, ej. 0.3-0.7).
 import sys, os
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter, ImageChops
 H = os.path.dirname(os.path.abspath(__file__))
@@ -44,11 +44,13 @@ n = len(o['p'])
 for j, spec in enumerate(o['p']):
     path, _, rng = spec.partition(':')
     im = Image.open(path).convert('RGB')
+    yb = 1.0
     if rng:
-        a, b = [float(v) for v in rng.split('-')]; im = im.crop((int(a*im.width), 0, int(b*im.width), im.height))
+        v = [float(x) for x in rng.split('-')]; yb = v[2] if len(v) > 2 else 1.0
+        im = im.crop((int(v[0]*im.width), 0, int(v[1]*im.width), int(yb*im.height)))
     cut = remove(pop(im), session=ses)
     cut = cut.crop(cut.getchannel('A').point(lambda v: 255 if v > 40 else 0).getbbox())
-    th = int(Hh*1.25); s = th/cut.height
+    th = max(int(Hh*1.25*yb), Hh+20); s = th/cut.height
     cut = cut.resize((int(cut.width*s), th), Image.LANCZOS)
     maxw = int(W*(0.62 if n == 1 else 0.55))
     if cut.width > maxw: cut = cut.crop(((cut.width-maxw)//2, 0, (cut.width-maxw)//2+maxw, cut.height))
