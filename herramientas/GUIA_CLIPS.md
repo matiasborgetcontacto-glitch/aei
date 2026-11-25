@@ -23,7 +23,7 @@ Responder siempre en español rioplatense.
   - La caja va en y≈1104 (TY=1074).
   - Entra con un pop (0,25 s), queda hasta ~3,8 s y sale con distorsión de ondas (0,5 s).
   - No tiene que tapar caras.
-- **Zoom fluido** (solo con cámara vertical; **en pantalla dividida NO hay zoom**): arranca acercándose (1,0 a 1,12 en 0,6 s) y cambia de plano suave (1,12 ↔ 1,24) al final de cada frase, cada 3,5 s como mínimo.
+- **SIN ZOOM** (el usuario no lo quiere: "por qué hace zoom"). `clip.py` ya no hace zoom salvo que se pase `--zoom`.
 
 ## Entrega
 - Nombre del archivo: `N_nombre_TT-FB-YT.mp4`.

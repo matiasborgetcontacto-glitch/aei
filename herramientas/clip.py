@@ -76,7 +76,7 @@ def fx(name, title, outp, opts):
                 else: f.alpha_composite(r.crop((-dx,0,W,1)),(0,y))
         f.save('%s/%04d.png'%(d,i))
     # zoom
-    if 'nozoom' in opts or 'split' in opts or 'vf' in opts:
+    if 'zoom' not in opts or 'split' in opts or 'vf' in opts:  # sin zoom salvo --zoom
         ex='1'
     else:
         pts=[0.6]; last=0.6
@@ -122,7 +122,7 @@ if __name__=='__main__':
         a=sys.argv[5:]; o={}; i=0
         while i<len(a):
             k=a[i][2:]
-            if k=='nozoom': o[k]=1; i+=1
+            if k in ('nozoom','zoom'): o[k]=1; i+=1
             elif k=='split': o[k]=(a[i+1],a[i+2]); i+=3
             else: o[k]=a[i+1]; i+=2
         fx(sys.argv[2],sys.argv[3],sys.argv[4],o)
