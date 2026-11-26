@@ -8,7 +8,7 @@ Responder siempre en español rioplatense.
 - **Un solo tema por clip.** No mezclar dos historias distintas en el mismo clip.
 - Priorizar momentos graciosos y de acción, no solo charla ni solo GTA.
 - No usar insultos en los títulos.
-- Si se habla de un jugador, se puede mostrar su foto grande con su nombre (ej.: Montero).
+- Si se habla de un jugador, poner su foto: `tarjeta.py FOTO.jpg "NOMBRE" OUT.png` (foto de Wikipedia, thumb de 500/960px con User-Agent genérico y pausas) y `clip.py fx ... --card OUT.png --card-at SEG`. No usarla si tapa una cara (en pantalla dividida tapa la cámara).
 
 ## Formato del video (1080x1920)
 - Recorte vertical de la cámara. **Nunca fondo borroso.**
