@@ -5,6 +5,7 @@ Responder siempre en español rioplatense.
 
 ## Contenido
 - Clips de 20 a 40 s. Cortar siempre al final de una frase.
+- **Un solo tema por clip.** No mezclar dos historias distintas en el mismo clip.
 - Priorizar momentos graciosos y de acción, no solo charla ni solo GTA.
 - No usar insultos en los títulos.
 - Si se habla de un jugador, se puede mostrar su foto grande con su nombre (ej.: Montero).
